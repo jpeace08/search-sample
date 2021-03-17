@@ -1,24 +1,47 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useRef, useMemo } from "react";
+import useContent from "./hooks/use-content";
 
 function App() {
+  const refTimeOut = useRef(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { content, isLoading } = useContent(searchTerm);
+
+  const onChange = type => e => {
+    if (refTimeOut.current) {
+      clearTimeout(refTimeOut.current);
+      refTimeOut.current = null;
+    }
+    refTimeOut.current = setTimeout(
+      (value) => {
+        setSearchTerm(value)
+      },
+      300,
+      e && e.target ? e.target.value : e,
+    );
+  }
+
+  //Mỗi lần content thay đổi sẽ render lại
+  const renderContent = useMemo(() => {
+    return (
+      <ul>
+        {content && (content || []).map(item => (
+          <li>{item?.title}</li>
+        ))}
+      </ul>
+    )
+  }, [content]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <input
+        type="text"
+        name="searchTerm"
+        id=""
+        onChange={onChange("searchTerm")}
+      />
+
+      {renderContent}
+    </>
   );
 }
 
